@@ -21,8 +21,8 @@ const GridSizePromptChoices: GridSizePromptChoice[] = [
 ];
 
 const InputTypePromptChoices: InputTypePromptChoice[] = [
-  { title: "User Input", value: "USER-INPUT" },
-  { title: "File", value: "FILE" },
+  { title: "User Input", value: InputType.USER },
+  { title: "File", value: InputType.FILE },
 ];
 
 export async function selectInputType(): Promise<InputType> {

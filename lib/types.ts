@@ -22,7 +22,10 @@ export type GridSize = {
   width: number;
 };
 
-export type InputType = "FILE" | "USER-INPUT";
+export enum InputType {
+  FILE,
+  USER,
+}
 
 export type GridSizePromptChoice = {
   title: string;

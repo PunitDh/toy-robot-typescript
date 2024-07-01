@@ -1,4 +1,3 @@
-import Grid from "./models/Grid";
 import {
   getFileName,
   getUserCommand,
@@ -6,17 +5,18 @@ import {
   selectInputType,
 } from "./lib/prompts";
 import fs from "fs";
-import { RawCommand } from "./lib/types";
+import { InputType, RawCommand } from "./lib/types";
 import Command from "./models/Command";
+import { createGrid, createGridSizeFromFileHeader } from "./factory/GridFactory";
 
 (async () => {
   const inputType = await selectInputType();
   switch (inputType) {
-    case "FILE":
+    case InputType.FILE:
       const filename = await getFileName();
       getFileInput(filename);
       break;
-    case "USER-INPUT":
+    case InputType.USER:
       await getUserInput();
       break;
     default:
@@ -27,27 +27,9 @@ import Command from "./models/Command";
 function getFileInput(filename: string) {
   const file = fs.readFileSync(filename, "utf-8");
   const lines = file.split("\n");
-  const gridLine = lines[0].trim().toUpperCase();
-  if (!gridLine.startsWith("GRID")) {
-    console.error(
-      "ERROR: Grid size not specified. The first line of the file must be GRID=h,w."
-    );
-    return;
-  }
-  const [_, gridSizeRaw] = gridLine.split("=");
-  if (!gridSizeRaw.trim()) {
-    console.error("ERROR: Invalid grid size.");
-    return;
-  }
-
-  const [height, width] = gridSizeRaw.split(/x| |,/gi).map(Number);
-  const gridSize = { height, width };
-
-  console.log("Your grid size:", gridSize);
-  const grid = new Grid(gridSize);
-  console.log(
-    `Grid ${grid.width}x${gridSize.height} created. Please PLACE robot.`
-  );
+  const gridSize = createGridSizeFromFileHeader(lines[0]);
+  if (!gridSize) return;
+  const grid = createGrid(gridSize);
 
   for (const line of lines.slice(1)) {
     const inputCommand = Command.parseCommand(
@@ -66,11 +48,7 @@ function getFileInput(filename: string) {
 
 async function getUserInput() {
   const gridSize = await selectGridSize();
-  console.log("Your grid size:", gridSize);
-  const grid = new Grid(gridSize);
-  console.log(
-    `Grid ${grid.width}x${gridSize.height} created. Please PLACE robot.`
-  );
+  const grid = createGrid(gridSize);
 
   while (true) {
     const inputCommand = await getUserCommand();
